@@ -1,0 +1,10 @@
+# 统一行尾：仓库内一律存 LF，检出时由 Git 按平台转换，
+# 避免 Windows 提交 CRLF 导致 diff 全红、跨平台协作噪音。
+* text=auto eol=lf
+
+# 二进制文件不做行尾转换
+*.png binary
+*.jpg binary
+*.docx binary
+*.xlsx binary
+*.ico binary
