@@ -1,5 +1,10 @@
 # docxsurgeon
 
+[![CI](https://github.com/txxcat/docxsurgeon/actions/workflows/ci.yml/badge.svg)](https://github.com/txxcat/docxsurgeon/actions/workflows/ci.yml)
+[![License](https://img.shields.io/github/license/txxcat/docxsurgeon)](LICENSE)
+[![Python](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue)](https://www.python.org)
+[![Status](https://img.shields.io/badge/status-alpha-orange)](#roadmap)
+
 **Operate on the *inside* of .docx files — replace embedded Excel, update chart ranges, fix checkbox glyphs. All in memory.**
 
 **对 docx 做 zip 包级"手术"：替换/编辑嵌入的 xlsx、更新图表数据引用范围、修复复选框打印符号。全程内存操作，不落地临时目录。**
@@ -24,9 +29,31 @@ OOXML 文件（docx/xlsx/pptx）本质是 zip 包，里面藏着 `word/embedding
 
 ## 安装
 
+要求 **Python >= 3.9**。
+
+**从 PyPI（待发布）**
+
+> 本项目尚未在 PyPI 正式发布，0.1.0 上线后会启用下面的命令。当前请使用下方的源码安装方式。
+
 ```bash
 pip install docxsurgeon
 ```
+
+**从源码安装（当前阶段推荐）**
+
+```bash
+pip install "git+https://github.com/txxcat/docxsurgeon.git"
+```
+
+**开发模式**
+
+```bash
+git clone https://github.com/txxcat/docxsurgeon
+cd docxsurgeon
+pip install -e .
+```
+
+依赖说明：运行时仅依赖 `openpyxl>=3.0`（编辑嵌入 xlsx 时用到，已随安装自动拉取）。其余功能（部件读写、图表范围改写、符号修复）不依赖任何第三方库。
 
 ## 快速上手
 
@@ -54,6 +81,40 @@ pkg.fix_checkbox_glyph()
 pkg.save("输出.docx")   # 未修改的部件字节级原样保留
 ```
 
+## 进阶示例
+
+**探索文档结构** —— 动刀前先看看包里有什么：
+
+```python
+pkg = DocxPackage("周报模板.docx")
+print(pkg.list_parts())        # 全部部件，按原始 zip 顺序
+print(pkg.list_embeddings())   # 只列 word/embeddings/ 下的嵌入文件
+print(pkg.has_part("word/document.xml"))   # True
+```
+
+**部件内文本替换** —— 把某个 XML 部件当纯文本做子串替换，返回替换次数：
+
+```python
+n = pkg.replace_text_in_part(
+    "word/charts/chart2.xml",
+    "Sheet1!$B$2:$B$20",
+    "Sheet1!$B$2:$B$8",
+)
+print(f"改了 {n} 处")
+```
+
+**失败安全** —— `open_embedded_xlsx` 的 with 块里若抛异常，本次对嵌入簿的修改会被整体丢弃，包保持原样：
+
+```python
+try:
+    with pkg.open_embedded_xlsx("word/embeddings/data.xlsx") as wb:
+        wb.active["A1"] = "新值"
+        raise RuntimeError("模拟中途出错")
+except RuntimeError:
+    pass
+# 此时嵌入簿未被破坏，可安全地改做别的处理或直接 save()
+```
+
 ## API
 
 ### `DocxPackage(source)`
@@ -75,6 +136,7 @@ pkg.save("输出.docx")   # 未修改的部件字节级原样保留
 ### 模块函数
 
 - `set_table_range(ws, ref)` —— 在 `open_embedded_xlsx` 块内修改 Excel 表格（ListObject）范围。
+- `__version__` —— 当前版本号（与 `package.py` 单一来源一致）。
 
 ## 设计要点
 
@@ -91,12 +153,13 @@ pkg.save("输出.docx")   # 未修改的部件字节级原样保留
 
 ## Roadmap
 
+- [ ] 上传 PyPI 正式版（当前未发布，`pip install` 需走源码）
 - [ ] 图表缓存数据（strCache/numCache）双写
 - [ ] 嵌入 xlsx 的图表部件（`word/charts` 引用嵌入簿的完整链路更新）
 - [ ] pptx / xlsx 宿主包的一等支持（当前 API 以 docx 命名，机制通用）
 - [ ] CLI：`python -m docxsurgeon list/extract/replace ...`
 
-## 开发
+## 开发 & 贡献
 
 ```bash
 git clone https://github.com/txxcat/docxsurgeon
@@ -105,6 +168,10 @@ pip install -e . pytest
 pytest
 ```
 
+仓库通过 GitHub Actions 跑 CI（见 `.github/workflows/ci.yml`，每次 push/PR 自动跑测试）。
+
+想参与贡献？请先阅读 [CONTRIBUTING.md](CONTRIBUTING.md)。
+
 ## License
 
-MIT
+[MIT](LICENSE)
