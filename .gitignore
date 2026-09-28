@@ -23,3 +23,6 @@ venv/
 # 系统杂物
 .DS_Store
 Thumbs.db
+
+# 项目本地记忆（WorkBuddy 工作区数据，不入公开仓库）
+.workbuddy/

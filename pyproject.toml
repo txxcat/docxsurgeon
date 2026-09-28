@@ -4,7 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "docxsurgeon"
-version = "0.1.0"
+# 版本号单一来源：只改 src/docxsurgeon/package.py 里的 __version__，这里自动读取
+dynamic = ["version"]
 description = "对 docx 做 zip 包级手术：替换/编辑嵌入的 xlsx、更新图表数据范围、修复复选框打印符号"
 readme = "README.md"
 license = { text = "MIT" }
@@ -32,6 +33,9 @@ Homepage = "https://github.com/txxcat/docxsurgeon"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.dynamic]
+version = { attr = "docxsurgeon.package.__version__" }
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
