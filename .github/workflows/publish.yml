@@ -1,0 +1,50 @@
+name: Publish to PyPI
+
+# 只在 GitHub Release 被「发布」时触发。单纯推 tag 不够 —— 多一步人工确认，
+# 避免误把一个坏版本顶到 PyPI 上（PyPI 不允许重传同版本，误发只能 yank + 改版本号重来）。
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    name: 构建 sdist + wheel
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: 安装构建工具
+        run: |
+          python -m pip install --upgrade pip
+          pip install build
+      - name: 发布前再跑一遍测试（最后一道闸）
+        run: |
+          pip install -e . pytest
+          pytest -v
+      - name: 构建分发包
+        run: python -m build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    name: 上传到 PyPI（Trusted Publishing / OIDC）
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/docxsurgeon
+    permissions:
+      # 只有这个 job 拿到 id-token: write。build job 要跑第三方构建后端（setuptools 等），
+      # 那里如果也有这个权限，一个恶意依赖就能借构建流程骗到 PyPI 上传凭据。
+      # 凭据只活几十分钟，且只在 publish 这一步出现。
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1

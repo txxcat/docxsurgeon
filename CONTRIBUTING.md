@@ -38,19 +38,37 @@ pytest -v
 
 ## 发布到 PyPI
 
+发布走 **Trusted Publishing**（GitHub Actions + OIDC），仓库里**不存任何长期 token**。
+工作流：`.github/workflows/publish.yml`（`on: release: published` 触发）。
+
+**一次性前置配置**（项目首次发布前完成）：
+
+1. PyPI 账号开启 **2FA**（PyPI 要求）。
+2. 在 <https://pypi.org/manage/account/publishing/> 添加 **pending publisher**：
+   - PyPI project name: `docxsurgeon`
+   - Owner: `txxcat`
+   - Repository name: `docxsurgeon`
+   - Workflow name: `publish.yml`
+   - Environment name: `pypi`
+3. 在本仓库 Settings → Environments 新建名为 `pypi` 的 environment。
+
+> pending publisher 只在**第一次真正上传时**才创建项目、并自动转成正式 publisher；它**不预留名字**，
+> 若发布前被别人抢注了同名就会失效——所以确认名字空了尽早发。
+
+**发版流程**：
+
 ```bash
-# 1) 改 __version__，并在 CHANGELOG 里加一段
-# 2) 清理并构建
-rm -rf dist build *.egg-info src/*.egg-info
-python -m build
-# 3) 先传测试源验证
-python -m twine upload --repository testpypi dist/*
-# 4) 正式发布
-python -m twine upload dist/*
+# 1) 改 src/docxsurgeon/package.py 里的 __version__（版本号单一来源）
+# 2) 本地验证
+pytest -v && python -m build
+# 3) 提交并打 tag
+git commit -am "release: v0.1.0"
+git tag v0.1.0
+git push origin main --tags
+# 4) 在 GitHub 上基于该 tag 建 Release 并 Publish —— 这一步才触发上传
 ```
 
-> 建议后续改成 **Trusted Publishing**（GitHub Actions + OIDC）：
-> 不落盘 long-lived token，`on: release` 触发即可。当前先手动发。
+> PyPI 不允许重传同一版本号。发错了只能在 PyPI 上 yank，然后改版本号重新发布。
 
 ## 提交规范
 
