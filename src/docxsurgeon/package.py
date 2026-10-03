@@ -15,7 +15,7 @@ import re
 import zipfile
 from contextlib import contextmanager
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 EMBEDDINGS_DIR = "word/embeddings/"
 
