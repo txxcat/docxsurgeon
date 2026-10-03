@@ -1,5 +1,6 @@
 # docxsurgeon
 
+[![PyPI](https://img.shields.io/pypi/v/docxsurgeon)](https://pypi.org/project/docxsurgeon/)
 [![CI](https://github.com/txxcat/docxsurgeon/actions/workflows/ci.yml/badge.svg)](https://github.com/txxcat/docxsurgeon/actions/workflows/ci.yml)
 [![License](https://img.shields.io/github/license/txxcat/docxsurgeon)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue)](https://www.python.org)
@@ -31,15 +32,13 @@ OOXML 文件（docx/xlsx/pptx）本质是 zip 包，里面藏着 `word/embedding
 
 要求 **Python >= 3.9**。
 
-**从 PyPI（待发布）**
-
-> 本项目尚未在 PyPI 正式发布，0.1.0 上线后会启用下面的命令。当前请使用下方的源码安装方式。
+**从 PyPI（推荐）**
 
 ```bash
 pip install docxsurgeon
 ```
 
-**从源码安装（当前阶段推荐）**
+**从源码安装（装开发中的最新代码）**
 
 ```bash
 pip install "git+https://github.com/txxcat/docxsurgeon.git"
@@ -153,7 +152,6 @@ except RuntimeError:
 
 ## Roadmap
 
-- [ ] 上传 PyPI 正式版（当前未发布，`pip install` 需走源码）
 - [ ] 图表缓存数据（strCache/numCache）双写
 - [ ] 嵌入 xlsx 的图表部件（`word/charts` 引用嵌入簿的完整链路更新）
 - [ ] pptx / xlsx 宿主包的一等支持（当前 API 以 docx 命名，机制通用）
